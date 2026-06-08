@@ -1,0 +1,33 @@
+server:
+  port: 8085
+
+spring:
+  application:
+    name: ride-service
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/ridesharing}
+    username: ${DB_USERNAME:rider}
+    password: ${DB_PASSWORD:rider123}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          batch_size: 20
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: 5672
+    username: ${RABBITMQ_USER:rider}
+    password: ${RABBITMQ_PASS:rider123}
+
+jwt:
+  access-secret: ${JWT_ACCESS_SECRET:TXlBY2Nlc3NTZWNyZXRLZXlGb3JSaWRlU2hhcmluZ0FwcA==}
+
+logging:
+  level:
+    com.ridesharing: INFO

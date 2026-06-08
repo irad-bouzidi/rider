@@ -1,0 +1,71 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      routes:
+        - id: auth-service
+          uri: ${AUTH_SERVICE_URL:http://localhost:8081}
+          predicates:
+            - Path=/api/v1/auth/**
+          filters:
+            - StripPrefix=1
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 100
+                redis-rate-limiter.burstCapacity: 200
+
+        - id: user-service
+          uri: ${USER_SERVICE_URL:http://localhost:8082}
+          predicates:
+            - Path=/api/v1/users/**
+          filters:
+            - StripPrefix=1
+            - name: JwtAuthentication
+
+        - id: driver-service
+          uri: ${DRIVER_SERVICE_URL:http://localhost:8083}
+          predicates:
+            - Path=/api/v1/drivers/**
+          filters:
+            - StripPrefix=1
+            - name: JwtAuthentication
+
+        - id: ride-service
+          uri: ${RIDE_SERVICE_URL:http://localhost:8085}
+          predicates:
+            - Path=/api/v1/rides/**
+          filters:
+            - StripPrefix=1
+            - name: JwtAuthentication
+
+        - id: payment-service
+          uri: ${PAYMENT_SERVICE_URL:http://localhost:8088}
+          predicates:
+            - Path=/api/v1/payments/**
+          filters:
+            - StripPrefix=1
+            - name: JwtAuthentication
+
+        - id: notification-service
+          uri: ${NOTIFICATION_SERVICE_URL:http://localhost:8089}
+          predicates:
+            - Path=/api/v1/notifications/**
+          filters:
+            - StripPrefix=1
+            - name: JwtAuthentication
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+
+jwt:
+  access-secret: ${JWT_ACCESS_SECRET:TXlBY2Nlc3NTZWNyZXRLZXlGb3JSaWRlU2hhcmluZ0FwcA==}
+
+logging:
+  level:
+    org.springframework.cloud.gateway: INFO

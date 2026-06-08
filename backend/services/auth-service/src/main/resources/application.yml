@@ -1,0 +1,47 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: auth-service
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/ridesharing}
+    username: ${DB_USERNAME:rider}
+    password: ${DB_PASSWORD:rider123}
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        jdbc:
+          batch_size: 20
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: 5672
+    username: ${RABBITMQ_USER:rider}
+    password: ${RABBITMQ_PASS:rider123}
+
+jwt:
+  access-secret: ${JWT_ACCESS_SECRET:TXlBY2Nlc3NTZWNyZXRLZXlGb3JSaWRlU2hhcmluZ0FwcA==}
+  refresh-secret: ${JWT_REFRESH_SECRET:TXlSZWZyZXNoU2VjcmV0S2V5Rm9yUmlkZVNoYXJpbmdBcHA=}
+  access-token-expiration: 900
+  refresh-token-expiration: 604800
+
+twilio:
+  account-sid: ${TWILIO_ACCOUNT_SID:test}
+  auth-token: ${TWILIO_AUTH_TOKEN:test}
+  phone-number: ${TWILIO_PHONE_NUMBER:+1234567890}
+
+logging:
+  level:
+    com.ridesharing: INFO
+    org.springframework.security: WARN

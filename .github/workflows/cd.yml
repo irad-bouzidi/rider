@@ -1,0 +1,44 @@
+name: Deploy to Production
+
+on:
+  workflow_run:
+    workflows: ["Build & Test"]
+    branches: [main]
+    types:
+      - completed
+
+env:
+  AWS_REGION: us-east-1
+  KUBE_NAMESPACE: ridesharing
+
+jobs:
+  deploy:
+    name: Deploy to EKS
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Update kube config
+        run: aws eks update-kubeconfig --region $AWS_REGION --name ridesharing-prod
+
+      - name: Deploy to Kubernetes
+        run: |
+          kubectl set image deployment/auth-service auth-service=${{ secrets.ECR_REGISTRY }}/ride-sharing/auth-service:${{ github.sha }} -n $KUBE_NAMESPACE
+          kubectl set image deployment/ride-service ride-service=${{ secrets.ECR_REGISTRY }}/ride-sharing/ride-service:${{ github.sha }} -n $KUBE_NAMESPACE
+          kubectl set image deployment/payment-service payment-service=${{ secrets.ECR_REGISTRY }}/ride-sharing/payment-service:${{ github.sha }} -n $KUBE_NAMESPACE
+          kubectl set image deployment/user-service user-service=${{ secrets.ECR_REGISTRY }}/ride-sharing/user-service:${{ github.sha }} -n $KUBE_NAMESPACE
+          kubectl set image deployment/api-gateway api-gateway=${{ secrets.ECR_REGISTRY }}/ride-sharing/api-gateway:${{ github.sha }} -n $KUBE_NAMESPACE
+
+      - name: Verify Deployment
+        run: |
+          kubectl rollout status deployment/auth-service -n $KUBE_NAMESPACE --timeout=5m
+          kubectl rollout status deployment/ride-service -n $KUBE_NAMESPACE --timeout=5m

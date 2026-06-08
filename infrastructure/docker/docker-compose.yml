@@ -1,0 +1,153 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: ridesharing-db
+    environment:
+      POSTGRES_DB: ridesharing
+      POSTGRES_USER: rider
+      POSTGRES_PASSWORD: rider123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rider -d ridesharing"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: ridesharing-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: ridesharing-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: rider
+      RABBITMQ_DEFAULT_PASS: rider123
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  elasticsearch:
+    image: elasticsearch:8.11.0
+    container_name: ridesharing-es
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+
+  kibana:
+    image: kibana:8.11.0
+    container_name: ridesharing-kibana
+    ports:
+      - "5601:5601"
+    environment:
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+    depends_on:
+      - elasticsearch
+
+  auth-service:
+    build: ../../backend/services/auth-service
+    container_name: auth-service
+    ports:
+      - "8081:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      DB_URL: jdbc:postgresql://postgres:5432/ridesharing
+      DB_USERNAME: rider
+      DB_PASSWORD: rider123
+      REDIS_HOST: redis
+      RABBITMQ_HOST: rabbitmq
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  user-service:
+    build: ../../backend/services/user-service
+    container_name: user-service
+    ports:
+      - "8082:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      DB_URL: jdbc:postgresql://postgres:5432/ridesharing
+      DB_USERNAME: rider
+      DB_PASSWORD: rider123
+      REDIS_HOST: redis
+      RABBITMQ_HOST: rabbitmq
+    depends_on:
+      - auth-service
+
+  ride-service:
+    build: ../../backend/services/ride-service
+    container_name: ride-service
+    ports:
+      - "8085:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      DB_URL: jdbc:postgresql://postgres:5432/ridesharing
+      DB_USERNAME: rider
+      DB_PASSWORD: rider123
+      REDIS_HOST: redis
+      RABBITMQ_HOST: rabbitmq
+    depends_on:
+      - auth-service
+
+  payment-service:
+    build: ../../backend/services/payment-service
+    container_name: payment-service
+    ports:
+      - "8088:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      DB_URL: jdbc:postgresql://postgres:5432/ridesharing
+      DB_USERNAME: rider
+      DB_PASSWORD: rider123
+      RABBITMQ_HOST: rabbitmq
+    depends_on:
+      - auth-service
+
+  api-gateway:
+    build: ../../backend/api-gateway
+    container_name: api-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      AUTH_SERVICE_URL: http://auth-service:8080
+      USER_SERVICE_URL: http://user-service:8080
+      RIDE_SERVICE_URL: http://ride-service:8080
+      PAYMENT_SERVICE_URL: http://payment-service:8080
+      REDIS_HOST: redis
+    depends_on:
+      - auth-service
+      - user-service
+      - ride-service
+      - payment-service
+
+volumes:
+  postgres_data:
+  es_data:
