@@ -6,6 +6,7 @@ interface User {
   phone: string;
   fullName: string;
   role: 'passenger' | 'driver';
+  photoUrl?: string;
 }
 
 interface AuthState {

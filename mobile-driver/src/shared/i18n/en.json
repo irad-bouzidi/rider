@@ -1,0 +1,12 @@
+{
+  "common": { "app_name": "Ride Sharing Driver", "cancel": "Cancel", "confirm": "Confirm", "save": "Save", "loading": "Loading...", "error": "Something went wrong", "retry": "Retry", "no_internet": "No internet connection" },
+  "auth": { "login": "Sign in", "signup": "Sign up", "logout": "Log out", "email": "Email", "password": "Password", "full_name": "Full name", "phone": "Phone", "forgot_password": "Forgot password?", "welcome_back": "Welcome back", "create_account": "Become a Driver", "otp_sent": "We've sent a code to", "verify_phone": "Verify your number" },
+  "home": { "title": "Home", "go_online": "Go Online", "go_offline": "Go Offline", "waiting": "Waiting for ride requests", "offline_msg": "Go online to start receiving rides", "new_request": "New ride request", "accept": "Accept", "decline": "Decline" },
+  "ride": { "heading_to_pickup": "Heading to pickup", "passenger_boarding": "Passenger boarding", "on_the_way": "On the way", "arrived": "I've arrived", "start_trip": "Start trip", "complete_trip": "Complete trip", "trip_complete": "Trip Complete", "earned": "You earned", "trip_time": "Trip time" },
+  "earnings": { "title": "Earnings", "today": "Today", "this_week": "This Week", "this_month": "This Month", "total": "Total", "rides": "Rides", "online": "Online", "daily": "Daily Breakdown" },
+  "wallet": { "title": "Wallet", "balance": "Available Balance", "pending": "pending", "withdraw": "Withdraw funds", "transactions": "Transaction History" },
+  "documents": { "title": "Documents", "description": "Upload your documents for verification.", "approved": "Approved", "pending": "Pending", "rejected": "Rejected", "tap_retry": "Tap to re-upload" },
+  "vehicle": { "title": "Vehicle", "make": "Make", "model": "Model", "year": "Year", "color": "Color", "license_plate": "License Plate", "type": "Vehicle Type", "save": "Save Vehicle" },
+  "profile": { "title": "Profile", "edit": "Edit Profile", "vehicle": "Vehicle", "documents": "Documents", "wallet": "Wallet", "settings": "Settings", "support": "Support", "logout": "Log out" },
+  "errors": { "general": "Something went wrong.", "network": "No internet connection.", "login_failed": "Invalid email or password.", "location_denied": "Location permission is required." }
+}
